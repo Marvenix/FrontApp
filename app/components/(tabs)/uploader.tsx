@@ -1,9 +1,9 @@
-import { uploadFile } from "@/app/api/uploaderService";
-import { pickAudioFile } from "@/app/utils/pickAudio";
-import { trimAudio } from "@/app/utils/trimAudio";
-import { useAppStore } from "@/app/utils/useAppStore";
+import { uploadFile } from "@/api/uploaderService";
 import { AudioTrimmer } from "@/controls/audioTrim/audioTrimmer";
 import { styles } from "@/styles/uploader.styles";
+import { pickAudioFile } from "@/utils/pickAudio";
+import { trimAudio } from "@/utils/trimAudio";
+import { useAppStore } from "@/utils/useAppStore";
 import { Audio } from "expo-av";
 import { DocumentPickerAsset } from "expo-document-picker";
 import React, { useState } from "react";
@@ -40,9 +40,10 @@ export default function Uploader() {
 
     if (!file) return;
 
-    setAudioDuration(await getAudioDuration(file.uri));
+    const duration = await getAudioDuration(file.uri);
+    setAudioDuration(duration);
 
-    if (audioDuration > maxDuration) {
+    if (duration > maxDuration) {
       setIsTooLong(true);
       return;
     }
@@ -64,18 +65,21 @@ export default function Uploader() {
     if (!file) return;
 
     const duration = trimRange.end - trimRange.start;
+    console.log('start (seconds): ', trimRange.start)
+    console.log('end (seconds): ', trimRange.end)
+    console.log(duration)
 
     const result = await trimAudio(file.uri, trimRange.start, duration);
 
-    if (result.success && result.uri) {
-      await uploadFile({
-        uri: result.uri,
-        name: `cut_${file.name}`,
-        mimeType: file.mimeType || "audio/mp4",
-      });
-    } else {
-      Alert.alert("Error", "Trimming failed: " + result.error);
-    }
+    // if (result.success && result.uri) {
+    //   await uploadFile({
+    //     uri: result.uri,
+    //     name: `cut_${file.name}`,
+    //     mimeType: file.mimeType || "audio/mp4",
+    //   });
+    // } else {
+    //   Alert.alert("Error", "Trimming failed: " + result.error);
+    // }
   };
 
   const handleCancelTrim = () => {
@@ -85,24 +89,35 @@ export default function Uploader() {
   return (
     <View style={styles.container}>
       {isTooLong && (
-        <View>
+        <View style={styles.container}>
           <AudioTrimmer
             maxDuration={maxDuration}
             audioDuration={audioDuration}
             setIsValid={setIsValid}
             setTrimRange={setTrimRange}
           />
-          <Pressable onPress={handleUploadTrimmed} disabled={!isValid}>
-            <Text style={styles.uploadButton}>Upload Trimmed File</Text>
+          <Pressable
+            style={[
+              styles.button,
+              styles.uploadButton,
+              !isValid && styles.disabledButton,
+            ]}
+            onPress={handleUploadTrimmed}
+            disabled={!isValid}
+          >
+            <Text style={styles.buttonText}>Upload Trimmed File</Text>
           </Pressable>
-          <Pressable onPress={handleCancelTrim}>
-            <Text style={styles.cancelButton}>Cancel</Text>
+          <Pressable
+            style={[styles.button, styles.cancelButton]}
+            onPress={handleCancelTrim}
+          >
+            <Text style={styles.buttonText}>Cancel</Text>
           </Pressable>
         </View>
       )}
 
       {!isTooLong && (
-        <View>
+        <View style={styles.container}>
           <Text style={styles.title}>Click below to upload audio file:</Text>
           <Pressable style={styles.button} onPress={handleUpload}>
             <Text style={styles.buttonText}>Upload File</Text>

@@ -21,12 +21,20 @@ export const styles = StyleSheet.create({
     fontSize: 20,
     marginBottom: 20,
   },
-    uploadButton: {
-    color: "#FFFFFF",
+  uploadButton: {
     backgroundColor: "#4CAF50",
+    width: 200,
+    marginTop: 5,
+    alignItems: "center",
   },
   cancelButton: {
-    color: "#FFFFFF",
     backgroundColor: "#F44336",
+    width: 200,
+    marginTop: 5,
+    alignItems: "center",
+  },
+  disabledButton: {
+    backgroundColor: "#A0A0A0",
+    opacity: 0.5,
   },
 });

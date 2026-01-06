@@ -1,4 +1,5 @@
 import { styles } from "@/styles/audioTrimmer.styles";
+import { useEffect } from "react";
 import { View } from "react-native";
 import { SymbolicWaveform, SymbolicWaveformProps } from "./symbolicWaveForm";
 import { TrimSlider, TrimSliderProps } from "./trimSlider";
@@ -22,8 +23,10 @@ export function AudioTrimmer({
 }: AudioTrimmerProps) {
   const initialRange = [0, maxDuration || audioDuration];
 
-  setTrimRange?.({ start: 0, end: maxDuration || audioDuration });
-  setIsValid?.(true);
+  useEffect(() => {
+    setTrimRange?.({ start: 0, end: maxDuration || audioDuration });
+    setIsValid?.(true);
+  }, []);
 
   return (
     <View style={styles.container}>

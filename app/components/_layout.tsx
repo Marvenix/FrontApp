@@ -9,7 +9,7 @@ export default function RootLayout() {
           screenOptions={{
             headerShown: false,
           }}
-        />
+        ></Stack>
       </SafeAreaView>
     </SafeAreaProvider>
   );
