@@ -1,5 +1,6 @@
 import { uploadFile } from "@/api/uploaderService";
 import { AudioTrimmer } from "@/controls/audioTrim/audioTrimmer";
+import { ModalWindow } from "@/controls/modalWindow";
 import { styles } from "@/styles/uploader.styles";
 import { pickAudioFile } from "@/utils/pickAudio";
 import { trimAudio } from "@/utils/trimAudio";
@@ -7,15 +8,47 @@ import { useAppStore } from "@/utils/useAppStore";
 import { Audio } from "expo-av";
 import { DocumentPickerAsset } from "expo-document-picker";
 import React, { useState } from "react";
-import { Alert, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
+
+const INITIAL_STATE = {
+  isTooLong: false,
+  isValid: false,
+  trimRange: { start: 0, end: 0 },
+  audioDuration: 0,
+  file: null,
+  modalVisible: false,
+  responseData: null,
+  isLoading: false,
+};
 
 export default function Uploader() {
-  const [isTooLong, setIsTooLong] = useState(false);
-  const [isValid, setIsValid] = useState(false);
-  const [trimRange, setTrimRange] = useState({ start: 0, end: 0 });
+  const [isTooLong, setIsTooLong] = useState(INITIAL_STATE.isTooLong);
+  const [isValid, setIsValid] = useState(INITIAL_STATE.isValid);
+  const [trimRange, setTrimRange] = useState(INITIAL_STATE.trimRange);
+  const [audioDuration, setAudioDuration] = useState(
+    INITIAL_STATE.audioDuration
+  );
+  const [file, setFile] = useState<DocumentPickerAsset | null>(
+    INITIAL_STATE.file
+  );
+  const [modalVisible, setModalVisible] = useState(INITIAL_STATE.modalVisible);
+  const [responseData, setResponseData] = useState<string | null>(
+    INITIAL_STATE.responseData
+  );
+  const [isLoading, setLoading] = useState(INITIAL_STATE.isLoading);
+
   const maxDuration = useAppStore((state) => state.maxDuration);
-  const [audioDuration, setAudioDuration] = useState(0);
-  const [file, setFile] = useState<DocumentPickerAsset | null>(null);
+
+  const resetState = () => {
+    setIsTooLong(INITIAL_STATE.isTooLong);
+    setIsValid(INITIAL_STATE.isValid);
+    setTrimRange(INITIAL_STATE.trimRange);
+    setAudioDuration(INITIAL_STATE.audioDuration);
+    setFile(INITIAL_STATE.file);
+    setModalVisible(INITIAL_STATE.modalVisible);
+    setResponseData(INITIAL_STATE.responseData);
+    setLoading(INITIAL_STATE.isLoading);
+  };
 
   const getAudioDuration = async (uri: string) => {
     try {
@@ -28,7 +61,7 @@ export default function Uploader() {
       }
       return 0;
     } catch (error) {
-      console.error("Błąd pobierania długości audio", error);
+      console.error("Downloading audio error", error);
       return 0;
     }
   };
@@ -48,16 +81,21 @@ export default function Uploader() {
       return;
     }
 
+    setLoading(true);
     try {
       const response = await uploadFile({
         uri: file.uri,
         name: file.name || "audio.m4a",
         mimeType: file.mimeType || "audio/mpeg",
       });
+      Alert.alert("Upload successful:");
 
-      Alert.alert("Upload successful:", response);
+      setResponseData(JSON.stringify(response, null, 2));
+      setModalVisible(true);
     } catch (error: any) {
       Alert.alert("Upload failed", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,30 +103,46 @@ export default function Uploader() {
     if (!file) return;
 
     const duration = trimRange.end - trimRange.start;
-    console.log('start (seconds): ', trimRange.start)
-    console.log('end (seconds): ', trimRange.end)
-    console.log(duration)
+    console.log("start (seconds): ", trimRange.start);
+    console.log("end (seconds): ", trimRange.end);
+    console.log(duration);
 
+    setLoading(true);
     const result = await trimAudio(file.uri, trimRange.start, duration);
 
-    // if (result.success && result.uri) {
-    //   await uploadFile({
-    //     uri: result.uri,
-    //     name: `cut_${file.name}`,
-    //     mimeType: file.mimeType || "audio/mp4",
-    //   });
-    // } else {
-    //   Alert.alert("Error", "Trimming failed: " + result.error);
-    // }
+    if (result.success && result.uri) {
+      try {
+        const response = await uploadFile({
+          uri: result.uri,
+          name: `cut_${file.name}`,
+          mimeType: file.mimeType || "audio/mp4",
+        });
+        Alert.alert("Upload successful:");
+
+        setResponseData(JSON.stringify(response, null, 2));
+        setModalVisible(true);
+      } catch (error: any) {
+        Alert.alert("Upload failed", error.message);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setLoading(false);
+      Alert.alert("Error", "Trimming failed: " + result.error);
+    }
   };
 
   const handleCancelTrim = () => {
     setIsTooLong(false);
   };
 
+  const handleClose = () => {
+    resetState();
+  };
+
   return (
     <View style={styles.container}>
-      {isTooLong && (
+      {isTooLong && !isLoading && (
         <View style={styles.container}>
           <AudioTrimmer
             maxDuration={maxDuration}
@@ -116,7 +170,7 @@ export default function Uploader() {
         </View>
       )}
 
-      {!isTooLong && (
+      {!isTooLong && !isLoading && (
         <View style={styles.container}>
           <Text style={styles.title}>Click below to upload audio file:</Text>
           <Pressable style={styles.button} onPress={handleUpload}>
@@ -124,6 +178,14 @@ export default function Uploader() {
           </Pressable>
         </View>
       )}
+
+      {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
+
+      <ModalWindow
+        modalVisible={modalVisible}
+        handleClose={handleClose}
+        responseData={responseData ?? ""}
+      />
     </View>
   );
 }
