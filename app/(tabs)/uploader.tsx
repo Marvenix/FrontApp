@@ -12,7 +12,6 @@ import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
 
 const INITIAL_STATE = {
   isTooLong: false,
-  isValid: false,
   trimRange: { start: 0, end: 0 },
   audioDuration: 0,
   file: null,
@@ -23,7 +22,6 @@ const INITIAL_STATE = {
 
 export default function Uploader() {
   const [isTooLong, setIsTooLong] = useState(INITIAL_STATE.isTooLong);
-  const [isValid, setIsValid] = useState(INITIAL_STATE.isValid);
   const [trimRange, setTrimRange] = useState(INITIAL_STATE.trimRange);
   const [audioDuration, setAudioDuration] = useState(
     INITIAL_STATE.audioDuration
@@ -41,7 +39,6 @@ export default function Uploader() {
 
   const resetState = () => {
     setIsTooLong(INITIAL_STATE.isTooLong);
-    setIsValid(INITIAL_STATE.isValid);
     setTrimRange(INITIAL_STATE.trimRange);
     setAudioDuration(INITIAL_STATE.audioDuration);
     setFile(INITIAL_STATE.file);
@@ -78,6 +75,7 @@ export default function Uploader() {
 
     if (duration > maxDuration) {
       setIsTooLong(true);
+      setTrimRange({ start: 0, end: maxDuration });
       return;
     }
 
@@ -103,9 +101,6 @@ export default function Uploader() {
     if (!file) return;
 
     const duration = trimRange.end - trimRange.start;
-    console.log("start (seconds): ", trimRange.start);
-    console.log("end (seconds): ", trimRange.end);
-    console.log(duration);
 
     setLoading(true);
     const result = await trimAudio(file.uri, trimRange.start, duration);
@@ -140,24 +135,25 @@ export default function Uploader() {
     resetState();
   };
 
+  const isRangeValid = (trimRange.end - trimRange.start) <= maxDuration;
+
   return (
     <View style={styles.container}>
       {isTooLong && !isLoading && (
         <View style={styles.container}>
           <AudioTrimmer
-            maxDuration={maxDuration}
+            slider={{multiSlider: { values: [trimRange.start, trimRange.end] }}}
             audioDuration={audioDuration}
-            setIsValid={setIsValid}
             setTrimRange={setTrimRange}
           />
           <Pressable
             style={[
               styles.button,
               styles.uploadButton,
-              !isValid && styles.disabledButton,
+              !isRangeValid && styles.disabledButton,
             ]}
             onPress={handleUploadTrimmed}
-            disabled={!isValid}
+            disabled={!isRangeValid}
           >
             <Text style={styles.buttonText}>Upload Trimmed File</Text>
           </Pressable>

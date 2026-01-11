@@ -105,13 +105,14 @@ export function TrimSlider({
   };
 
   const handleValuesChange = (newValues: number[]) => {
-    if (maxDuration) {
-      if (newValues[1] - newValues[0] < maxDuration) {
-        setIsValid?.(true);
-      } else {
-        setIsValid?.(false);
-      }
-    }
+    setTrimRange?.({ start: newValues[0], end: newValues[1] });
+    // if (maxDuration) {
+    //   if (newValues[1] - newValues[0] < maxDuration) {
+    //     setIsValid?.(true);
+    //   } else {
+    //     setIsValid?.(false);
+    //   }
+    // }
   };
 
   const handleValuesChangeFinish = (newValues: number[]) => {
