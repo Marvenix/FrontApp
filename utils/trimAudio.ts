@@ -3,7 +3,11 @@ import { NativeModules, Platform } from "react-native";
 const { FFmpegKitReactNativeModule } = NativeModules;
 
 interface TrimResult {
-  uri: string | null;
+  data: {
+    uri: string;
+    mimeType: string;
+    name: string;
+  } | null;
   success: boolean;
   error?: string;
 }
@@ -15,7 +19,8 @@ export const trimAudio = async (
 ): Promise<TrimResult> => {
   try {
     const timestamp = Date.now();
-    const outputName = `trimmed_${timestamp}.m4a`;
+    const outputName = `trimmed_${timestamp}.wav`;
+    const mimeType = "audio/wav";
     const cacheDir = FileSystem.Paths.cache;
     let outputPath = `${cacheDir.uri}${outputName}`;
     let inputPath = sourceUri;
@@ -29,14 +34,14 @@ export const trimAudio = async (
       "-y",
       "-ss",
       String(startSeconds),
-      "-t",
-      String(durationSeconds),
       "-i",
       inputPath,
+      "-t",
+      String(durationSeconds),
       "-c:a",
-      "aac",
-      "-b:a",
-      "128k",
+      "pcm_s16le",
+      "-ar",
+      "44100",
       outputPath,
     ];
 
@@ -53,7 +58,10 @@ export const trimAudio = async (
 
     if (returnCode === 0) {
       console.log(`[FFmpeg] Success. Output at: ${outputPath}`);
-      return { success: true, uri: outputPath };
+      return {
+        success: true,
+        data: { uri: outputPath, mimeType: mimeType, name: outputName },
+      };
     } else {
       const logs =
         await FFmpegKitReactNativeModule.abstractSessionGetAllLogsAsString(
@@ -61,10 +69,10 @@ export const trimAudio = async (
           null
         );
       console.error(`[FFmpeg] Failed: ${logs}`);
-      return { success: false, uri: null, error: logs };
+      return { success: false, data: null, error: logs };
     }
   } catch (e: any) {
     console.error(`[FFmpeg] Exception: ${e.message}`);
-    return { success: false, uri: null, error: e.message };
+    return { success: false, data: null, error: e.message };
   }
 };

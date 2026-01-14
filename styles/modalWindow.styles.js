@@ -40,6 +40,11 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
   },
+  headerTitle: {
+    fontSize: 18,
+    color: "#666",
+    textAlign: "center",
+  },
   scrollView: {
     flex: 1,
     backgroundColor: "#f5f5f5",
@@ -50,5 +55,41 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "monospace",
     color: "#333",
+  },
+  mainText: {
+    fontSize: 40,
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
+    marginVertical: 5,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#eee",
+    marginVertical: 10,
+  },
+  subHeader: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 10,
+  },
+  listContainer: {
+    flex: 1,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  rowLabel: {
+    width: 70,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  rowValue: {
+    width: 40,
+    fontSize: 12,
+    textAlign: "right",
+    color: "#666",
   },
 });

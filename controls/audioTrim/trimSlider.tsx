@@ -4,9 +4,7 @@ import { useState } from "react";
 import { View, ViewStyle } from "react-native";
 
 export type TrimSliderProps = {
-  setIsValid?: (valid: boolean) => void;
   setTrimRange?: (range: { start: number; end: number }) => void;
-  maxDuration?: number;
   lineMarker?: {
     width?: number;
     height?: number;
@@ -28,9 +26,7 @@ export type TrimSliderProps = {
 };
 
 export function TrimSlider({
-  maxDuration,
   setTrimRange,
-  setIsValid,
   lineMarker = {},
   multiSlider = {},
 }: TrimSliderProps) {
@@ -106,13 +102,6 @@ export function TrimSlider({
 
   const handleValuesChange = (newValues: number[]) => {
     setTrimRange?.({ start: newValues[0], end: newValues[1] });
-    // if (maxDuration) {
-    //   if (newValues[1] - newValues[0] < maxDuration) {
-    //     setIsValid?.(true);
-    //   } else {
-    //     setIsValid?.(false);
-    //   }
-    // }
   };
 
   const handleValuesChangeFinish = (newValues: number[]) => {

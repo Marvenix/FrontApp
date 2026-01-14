@@ -1,3 +1,5 @@
+import { processServerResponse } from "@/utils/processServerResponse";
+
 export interface AudioFile {
   uri: string;
   name: string;
@@ -6,19 +8,17 @@ export interface AudioFile {
 
 export const uploadFile = async (file: AudioFile) => {
   const formData = new FormData();
+  const fileUri = file.uri.startsWith('file://') ? file.uri : 'file://' + file.uri;
 
   formData.append("file", {
-    uri: file.uri,
+    uri: fileUri,
     name: file.name,
     type: file.mimeType,
   } as any);
 
-  const response = await fetch("tutaj podpiac backend", {
+  const response = await fetch("http://10.0.2.2:5000/predict", {
     method: "POST",
     body: formData,
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
   });
 
   if (!response.ok) {
@@ -26,5 +26,5 @@ export const uploadFile = async (file: AudioFile) => {
     throw new Error(`Upload failed: ${errorText}`);
   }
 
-  return response.json();
+  return processServerResponse(await response.json());
 };

@@ -33,6 +33,16 @@ export const styles = StyleSheet.create({
     marginTop: 5,
     alignItems: "center",
   },
+  playStopButton: {
+    width: 200,
+    marginTop: 5,
+    alignItems: "center",
+  },
+  resetButton: {
+    width: 200,
+    marginTop: 5,
+    alignItems: "center",
+  },
   disabledButton: {
     backgroundColor: "#A0A0A0",
     opacity: 0.5,

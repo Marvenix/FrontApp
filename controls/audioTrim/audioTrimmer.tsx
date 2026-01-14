@@ -21,9 +21,9 @@ export function AudioTrimmer({
       <SymbolicWaveform {...waveForm} />
       <View style={styles.overlay}>
         <TrimSlider
-          {...slider}
+          {...slider?.lineMarker}
           setTrimRange={setTrimRange}
-          multiSlider={{ min: 0, max: audioDuration }}
+          multiSlider={{ min: 0, max: audioDuration, ...slider?.multiSlider }}
         />
       </View>
     </View>
