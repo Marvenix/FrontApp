@@ -26,19 +26,6 @@ export default function TabLayout() {
         }}
       />
 
-      {/* <Tabs.Screen
-        name="recorder"
-        options={{
-          tabBarIcon: ({ size, color, focused }) => (
-            <Ionicons
-              name={focused ? "mic" : "mic-outline"}
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-      /> */}
-
       <Tabs.Screen
         name="uploader"
         options={{
